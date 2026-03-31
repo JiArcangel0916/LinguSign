@@ -25,7 +25,7 @@ pip install -r requirements.txt
   ```
 ## Running the Inference (Test)
 
-To test the real-time ASL recognition, ensure you have the **asl_model.pkl** and **hand_landmarker.task** files in your root directory.
+To test the real-time ASL recognition, ensure you have the **pkl file** and **hand_landmarker.task** files in your root directory.
 
 4. Run the inference file:
   ```

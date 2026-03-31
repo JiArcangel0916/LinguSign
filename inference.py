@@ -1,21 +1,23 @@
+# this is the main file that runs the webcam and does the inference using the trained model. 
+# it uses mediapipe to detect the hand landmarks and then uses the trained model to predict the letter being signed.
+# click q to exit the webcam.
 import cv2
 import mediapipe as mp
 import numpy as np
 import joblib
 import time
 
-
-print("--- [1/4] Loading ASL Model... ---") #nilagyan ko lang nito para makita yung progress (mabagal kasi mag-run hehe)
+print("--- Loading ASL Model... ---") #nilagyan ko lang nito para makita yung progress (mabagal kasi mag-run hehe)
 try:
-    data = joblib.load('asl_model.pkl')
+    data = joblib.load('asl_model_v2.pkl')
     model = data['classifier']
     encoder = data['label_encoder']
-    print("✅ Model and Encoder loaded successfully.")
+    print("Model and Encoder loaded successfully.")
 except Exception as e:
-    print(f"❌ Error loading model: {e}")
+    print(f"Error loading model: {e}")
     exit()
 
-print("--- [2/4] Initializing MediaPipe Hand Landmarker... ---")
+print("--- Initializing MediaPipe Hand Landmarker... ---")
 BaseOptions = mp.tasks.BaseOptions
 HandLandmarker = mp.tasks.vision.HandLandmarker
 HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
@@ -28,29 +30,29 @@ options = HandLandmarkerOptions(
 
 try:
     detector = HandLandmarker.create_from_options(options)
-    print("✅ MediaPipe initialized.")
+    print("MediaPipe initialized.")
 except Exception as e:
-    print(f"❌ Error initializing MediaPipe: {e}")
+    print(f"Error initializing MediaPipe: {e}")
     print("Check if 'hand_landmarker.task' is in the same folder.")
     exit()
 
-print("--- [3/4] Opening Webcam... ---")
+print("--- Opening Webcam... ---")
 cap = cv2.VideoCapture(0)
 
 if not cap.isOpened():
-    print("❌ Error: Could not open webcam. Check if another app is using it.")
+    print("Error: Could not open webcam. Check if another app is using it.")
     exit()
 
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-print("✅ Webcam is ready.")
+print("Webcam is ready.")
 
-print("--- [4/4] Starting Detection Loop (Press 'q' to exit) ---")
+print("--- Starting Detection Loop (Press 'q' to exit) ---")
 
 while cap.isOpened():
     ret, frame = cap.read()
     if not ret:
-        print("❌ Failed to grab frame.")
+        print("Error: Failed to grab frame.")
         break
     
     frame = cv2.flip(frame, 1)
@@ -105,7 +107,6 @@ while cap.isOpened():
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-# Cleanup
 print("Closing application...")
 cap.release()
 cv2.destroyAllWindows()

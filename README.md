@@ -1,4 +1,4 @@
-# 👋 LinguHand
+# 👋 Samplingo
 
 A web application for ASL Learning using MediaPipe and SVM.
 

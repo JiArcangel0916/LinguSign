@@ -28,7 +28,7 @@ venv/
 dataset/
 images/
 videos/
-*.mp4
+
 
 node_modules/
 dist/

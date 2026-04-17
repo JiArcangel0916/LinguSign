@@ -26,6 +26,7 @@ dist-ssr
 # --- Specific Folders from User ---
 venv/
 dataset/
+data/
 images/
 videos/
 

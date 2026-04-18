@@ -14,7 +14,7 @@ const Learn = ({ onBack }) => {
       />
 
       <h2 className="text-center text-[32px] font-medium text-black mb-12">
-        Which do you want to <span className="text-primary">learn</span>?
+        Choose you <span className="text-primary">drill</span> type
       </h2>
 
       <div className="flex flex-col items-center gap-8 max-w-2xl mx-auto">

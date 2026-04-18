@@ -5,6 +5,7 @@ import LearnLayout from "./components/layout/learnlayout";
 import Learn from "./components/pages/learn";
 import DictionaryLayout from "./components/layout/dictionarylayout";
 import Dictionary from "./components/pages/dictionary";
+import Translation from "./components/pages/translation";
 
 function App() {
   const [view, setView] = useState("landing");
@@ -17,6 +18,7 @@ function App() {
           <Landing 
             onLearnClick={() => setView("learn")} 
             onDictClick={() => setView("dictionary")} 
+            onTranslateClick={() => setView("translation")} // 2. Ikabit ang translation click
           />
         </LandingLayout>
       )}
@@ -33,6 +35,13 @@ function App() {
         <DictionaryLayout>
           <Dictionary onBack={() => setView("landing")} />
         </DictionaryLayout>
+      )}
+
+      {/* TRANSLATION VIEW */}
+      {view === "translation" && (
+        <LearnLayout> 
+          <Translation onBack={() => setView("landing")} />
+        </LearnLayout>
       )}
     </>
   );

@@ -8,7 +8,7 @@
     - this code can be called when the user starts their learning session or when they wish to continue leraning on the same category
 */}
 
-import { ALPHABET_DICT, DIGIT_DICT, WORD_DICT } from "./aslData";
+import { ALPHABET_DICT, DIGIT_DICT, WORD_DICT } from "../../aslData";
 
 export const generateQuiz = (category) => {
     let pool = []

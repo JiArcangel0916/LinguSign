@@ -1,6 +1,6 @@
 import React from "react";
 
-const Landing = ({ onLearnClick, onDictClick }) => {
+const Landing = ({ onLearnClick, onDictClick, onTranslateClick }) => {
   return (
     <div className="flex flex-col items-center justify-start pt-15 font-fredoka">
       <h1 className="text-[32px] font-medium text-black mb-24">
@@ -25,6 +25,7 @@ const Landing = ({ onLearnClick, onDictClick }) => {
         <img
           src="/translate-button.svg"
           alt="Translate"
+          onClick={onTranslateClick} 
           className="w-[260px] cursor-pointer hover:scale-110 hover:-translate-y-2 transition duration-300"
         />
       </div>

@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ALPHABET_DICT, WORD_DICT } from './aslData';
 
-const Translation = () => {
-  const [mode, setMode] = useState('ASLtoText');
+const ORANGE = "#F97316";
+const NAVY = "#1E3A5F";
+
+const Translation = ({ onBack }) => {
+  const [mode, setMode] = useState('TexttoASL');
   const [recording, setRecording] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [transcript, setTranscript] = useState("");
@@ -17,9 +20,7 @@ const Translation = () => {
 
   useEffect(() => {
     if (recording) {
-      timerRef.current = setInterval(() => {
-        setSeconds((prev) => prev + 1);
-      }, 1000);
+      timerRef.current = setInterval(() => setSeconds(p => p + 1), 1000);
     } else {
       clearInterval(timerRef.current);
       setSeconds(0);
@@ -33,22 +34,18 @@ const Translation = () => {
       setRecording(false);
       return;
     }
-
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       if (videoRef.current) videoRef.current.srcObject = stream;
       setRecording(true);
-
       const recorder = new MediaRecorder(stream);
       mediaRecorderRef.current = recorder;
       const chunks = [];
-
       recorder.ondataavailable = (e) => chunks.push(e.data);
       recorder.onstop = async () => {
         const blob = new Blob(chunks, { type: 'video/webm' });
         const formData = new FormData();
         formData.append('file', blob);
-
         setTranscript("Translating...");
         try {
           const res = await fetch('http://127.0.0.1:8000/translate-video', {
@@ -57,13 +54,12 @@ const Translation = () => {
           });
           const data = await res.json();
           setTranscript(data.text);
-        } catch (err) {
+        } catch {
           setTranscript("Server Error");
         }
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach(t => t.stop());
         setRecording(false);
       };
-
       recorder.start();
       setTimeout(() => {
         if (recorder.state === "recording") {
@@ -71,15 +67,15 @@ const Translation = () => {
           setRecording(false);
         }
       }, 10000);
-    } catch (err) {
+    } catch {
       setTranscript("Camera access denied");
     }
   };
 
   const handleTranslateText = () => {
+    if (!inputText.trim()) return;
     const words = inputText.trim().toUpperCase().split(/\s+/);
     let final = [];
-
     words.forEach(word => {
       let found = null;
       for (const cat of WORD_DICT) {
@@ -94,7 +90,6 @@ const Translation = () => {
         });
       }
     });
-
     setSequence(final);
     setCurrentIndex(0);
     setIsPlaying(final.length > 0);
@@ -104,7 +99,7 @@ const Translation = () => {
     if (isPlaying && currentIndex < sequence.length) {
       const duration = sequence[currentIndex].type === 'word' ? 3000 : 1500;
       const timer = setTimeout(() => {
-        if (currentIndex < sequence.length - 1) setCurrentIndex(prev => prev + 1);
+        if (currentIndex < sequence.length - 1) setCurrentIndex(p => p + 1);
         else setIsPlaying(false);
       }, duration);
       return () => clearTimeout(timer);
@@ -117,109 +112,314 @@ const Translation = () => {
     return `00:${mins}:${secs}`;
   };
 
+  const nextSlide = () => {
+    setIsPlaying(false);
+    if (currentIndex < sequence.length - 1) setCurrentIndex(p => p + 1);
+  };
+
+  const prevSlide = () => {
+    setIsPlaying(false);
+    if (currentIndex > 0) setCurrentIndex(p => p - 1);
+  };
+
   const renderMedia = (item) => {
     const path = item.media.replace(/[<>]/g, "");
     const isVideo = path.toLowerCase().endsWith('.mp4');
-
     if (isVideo) {
       return (
-        <video 
+        <video
           key={path}
-          src={path} 
-          autoPlay 
-          muted 
+          src={path}
+          autoPlay
+          muted
           loop
-          className="max-h-[65%] w-full object-contain drop-shadow-2xl"
+          style={{ width: "100%", height: "100%", objectFit: "contain" }}
         />
       );
     }
     return (
-      <img 
-        src={path} 
-        className="max-h-[65%] object-contain drop-shadow-2xl" 
-        alt="sign" 
+      <img
+        src={path}
+        alt="sign"
+        style={{ width: "100%", height: "100%", objectFit: "contain" }}
       />
     );
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="flex justify-center space-x-4 mb-10">
-        {['TexttoASL', 'ASLtoText'].map((m) => (
-          <button
-            key={m}
-            onClick={() => { setMode(m); setTranscript(""); setSequence([]); }}
-            className={`px-8 py-3 rounded-2xl font-bold border-2 transition-all ${mode === m ? 'bg-orange-500 text-white border-orange-500 shadow-lg' : 'text-orange-500 border-orange-500 hover:bg-orange-50'}`}
-          >
-            {m === 'TexttoASL' ? 'Text to ASL' : 'ASL to Text'}
-          </button>
-        ))}
+    <div style={{ minHeight: "100vh", background: "#EDEDED", fontFamily: "'Nunito', sans-serif" }}>
+      <div style={{
+        background: ORANGE,
+        height: 70,
+        display: "flex",
+        alignItems: "center",
+        padding: "0 28px",
+        gap: 12,
+        boxShadow: "0 2px 8px rgba(249,115,22,0.3)",
+      }}>
+        <span style={{ fontSize: 26 }}>🤚</span>
+        <span style={{ fontSize: 26, fontWeight: 800, color: "white", letterSpacing: "-0.5px" }}>Palmingo</span>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-        <div className="bg-white p-6 rounded-[40px] shadow-xl border-4 border-gray-50 aspect-square flex flex-col relative overflow-hidden">
-          {mode === 'ASLtoText' ? (
-            <div className="relative h-full w-full bg-gray-100 rounded-[35px] overflow-hidden">
-              <video ref={videoRef} autoPlay muted className="w-full h-full object-cover" />
-              {recording && (
-                <div className="absolute top-8 left-1/2 -translate-x-1/2 bg-red-600 text-white px-4 py-1 rounded-lg font-mono text-lg font-bold shadow-md animate-pulse">
-                  {formatTime(seconds)}
-                </div>
-              )}
-              <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center justify-center">
-                <div className="w-20 h-20 rounded-full border-4 border-white flex items-center justify-center">
-                  <button 
-                    onClick={toggleRecording}
-                    className={`transition-all duration-300 shadow-xl ${
-                      recording ? 'w-8 h-8 bg-red-600 rounded-sm' : 'w-14 h-14 bg-red-600 rounded-full hover:scale-110'
-                    }`}
-                  />
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col h-full space-y-4">
-              <textarea
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                placeholder="Type your message here..."
-                className="flex-1 p-6 rounded-3xl border-2 border-orange-100 outline-none focus:border-orange-500 font-bold text-xl text-orange-600 resize-none"
-              />
-              <button 
-                onClick={handleTranslateText}
-                className="w-full bg-orange-500 text-white py-5 rounded-2xl font-black text-xl hover:bg-orange-600 transition shadow-lg"
-              >
-                {isPlaying ? "🔄 REPLAYING..." : "TRANSLATE TO ASL"}
-              </button>
-            </div>
-          )}
+      <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 20px" }}>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: 24 }}>
+          <button
+            onClick={onBack}
+            style={{
+              background: "none", border: "none", cursor: "pointer",
+              fontSize: 15, fontWeight: 700, color: NAVY,
+              fontFamily: "'Nunito', sans-serif", padding: "6px 0",
+              display: "flex", alignItems: "center", gap: 6,
+            }}
+          >
+            ← Back
+          </button>
         </div>
 
-        <div className="bg-white p-6 rounded-[40px] shadow-xl border-4 border-gray-50 aspect-square flex flex-col justify-center items-center text-center">
-          {mode === 'ASLtoText' ? (
-            <div className="w-full h-full flex flex-col justify-center">
-              <p className="text-gray-400 text-xs font-bold uppercase tracking-[0.2em] mb-4">AI Interpretation</p>
-              <h2 className="text-orange-500 text-5xl font-black italic break-words px-4 leading-tight">
-                {transcript || "Waiting..."}
-              </h2>
-            </div>
-          ) : (
-            <div className="w-full h-full relative flex flex-col items-center justify-center">
-              {sequence.length > 0 ? (
-                <>
-                  {renderMedia(sequence[currentIndex])}
-                  <h2 className="text-orange-500 text-5xl font-black mt-6 uppercase tracking-tighter">
-                    {sequence[currentIndex].word}
-                  </h2>
-                  <div className="absolute top-0 right-0 bg-orange-100 text-orange-600 px-4 py-2 rounded-2xl text-sm font-black">
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 12, marginBottom: 28 }}>
+          {['TexttoASL', 'ASLtoText'].map((m) => (
+            <button
+              key={m}
+              onClick={() => { setMode(m); setTranscript(""); setSequence([]); setInputText(""); setIsPlaying(false); }}
+              style={{
+                padding: "10px 28px",
+                borderRadius: 50,
+                fontFamily: "'Nunito', sans-serif",
+                fontSize: 14,
+                fontWeight: 800,
+                cursor: "pointer",
+                border: `2px solid ${ORANGE}`,
+                background: mode === m ? ORANGE : "white",
+                color: mode === m ? "white" : ORANGE,
+                transition: "all 0.18s",
+                letterSpacing: "0.3px",
+              }}
+            >
+              {m === 'TexttoASL' ? 'Text to ASL' : 'ASL to Text'}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+          <div style={{
+            background: "white",
+            borderRadius: 28,
+            padding: 20,
+            boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+            aspectRatio: "1/1",
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+          }}>
+            {mode === 'TexttoASL' ? (
+              <>
+                <div style={{
+                  flex: 1,
+                  border: "1.5px solid #F3F4F6",
+                  borderRadius: 18,
+                  padding: 16,
+                  marginBottom: 14,
+                  position: "relative",
+                }}>
+                  <textarea
+                    value={inputText}
+                    onChange={e => setInputText(e.target.value)}
+                    placeholder="Write something here..."
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      border: "none",
+                      outline: "none",
+                      resize: "none",
+                      fontFamily: "'Nunito', sans-serif",
+                      fontSize: 15,
+                      fontWeight: 600,
+                      color: NAVY,
+                      background: "transparent",
+                    }}
+                  />
+                </div>
+                <button
+                  onClick={handleTranslateText}
+                  style={{
+                    background: ORANGE,
+                    color: "white",
+                    border: "none",
+                    borderRadius: 50,
+                    padding: "13px",
+                    fontFamily: "'Nunito', sans-serif",
+                    fontSize: 15,
+                    fontWeight: 800,
+                    cursor: "pointer",
+                    width: "100%",
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  {isPlaying ? "🔄 Auto-playing..." : "Translate to ASL →"}
+                </button>
+              </>
+            ) : (
+              <div style={{
+                flex: 1,
+                background: "#F9FAFB",
+                borderRadius: 20,
+                position: "relative",
+                overflow: "hidden",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}>
+                <video ref={videoRef} autoPlay muted style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 20 }} />
+                {recording && (
+                  <div style={{
+                    position: "absolute", top: 14, left: "50%", transform: "translateX(-50%)",
+                    background: "#DC2626", color: "white", padding: "4px 14px",
+                    borderRadius: 8, fontFamily: "monospace", fontSize: 15, fontWeight: 700,
+                  }}>
+                    {formatTime(seconds)}
+                  </div>
+                )}
+                <div style={{ position: "absolute", bottom: 16, left: "50%", transform: "translateX(-50%)" }}>
+                  <div style={{
+                    width: 64, height: 64, borderRadius: "50%",
+                    border: "3px solid white",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <button
+                      onClick={toggleRecording}
+                      style={{
+                        width: recording ? 22 : 46,
+                        height: recording ? 22 : 46,
+                        background: "#DC2626",
+                        border: "none",
+                        borderRadius: recording ? 4 : "50%",
+                        cursor: "pointer",
+                        transition: "all 0.25s",
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div style={{
+            background: "white",
+            borderRadius: 28,
+            padding: 20,
+            boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+            aspectRatio: "1/1",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            overflow: "hidden",
+            position: "relative",
+          }}>
+            {mode === 'TexttoASL' ? (
+              sequence.length > 0 ? (
+                <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative" }}>
+                  <div style={{
+                    position: "absolute", top: 0, right: 0,
+                    background: "#FFF7ED", color: ORANGE,
+                    padding: "6px 14px", borderRadius: 50,
+                    fontSize: 13, fontWeight: 800,
+                  }}>
                     {currentIndex + 1} / {sequence.length}
                   </div>
-                </>
+                  
+                  <div style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", flex: 1 }}>
+                    <button 
+                      onClick={prevSlide}
+                      disabled={currentIndex === 0}
+                      style={{ 
+                        background: "#F3F4F6", border: "none", borderRadius: "50%", 
+                        width: 36, height: 36, cursor: currentIndex === 0 ? "default" : "pointer",
+                        color: NAVY, fontWeight: "bold", opacity: currentIndex === 0 ? 0.3 : 1
+                      }}
+                    >
+                      ‹
+                    </button>
+
+                    <div style={{ width: "70%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {renderMedia(sequence[currentIndex])}
+                    </div>
+
+                    <button 
+                      onClick={nextSlide}
+                      disabled={currentIndex === sequence.length - 1}
+                      style={{ 
+                        background: "#F3F4F6", border: "none", borderRadius: "50%", 
+                        width: 36, height: 36, cursor: currentIndex === sequence.length - 1 ? "default" : "pointer",
+                        color: NAVY, fontWeight: "bold", opacity: currentIndex === sequence.length - 1 ? 0.3 : 1
+                      }}
+                    >
+                      ›
+                    </button>
+                  </div>
+
+                  <p style={{ fontSize: 32, fontWeight: 800, color: ORANGE, marginTop: 10, textTransform: "uppercase", letterSpacing: "-0.5px" }}>
+                    {sequence[currentIndex].word}
+                  </p>
+
+                  <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
+                    {sequence.map((_, i) => (
+                      <div key={i} style={{
+                        width: i === currentIndex ? 16 : 6,
+                        height: 6,
+                        borderRadius: 99,
+                        background: i === currentIndex ? ORANGE : "#E5E7EB",
+                        transition: "all 0.3s",
+                      }} />
+                    ))}
+                  </div>
+                
+                </div>
               ) : (
-                <div className="text-gray-300 italic font-medium">ASL Visualization will appear here</div>
-              )}
-            </div>
-          )}
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 48, marginBottom: 12 }}>👐</div>
+                  <p style={{ color: "#9CA3AF", fontWeight: 600, fontSize: 14 }}>ASL visualization will appear here</p>
+                </div>
+              )
+            ) : (
+              <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", justifyContent: "flex-start" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                  <p style={{ fontSize: 11, fontWeight: 800, color: "#9CA3AF", textTransform: "uppercase", letterSpacing: "0.15em" }}>
+                    Live Transcript
+                  </p>
+                  {recording && (
+                    <span style={{
+                      background: "#FEE2E2", color: "#DC2626",
+                      fontSize: 11, fontWeight: 800, padding: "3px 10px",
+                      borderRadius: 50, textTransform: "uppercase", letterSpacing: "0.1em",
+                    }}>
+                      Live
+                    </span>
+                  )}
+                </div>
+                <div style={{
+                  flex: 1,
+                  border: "1.5px solid #F3F4F6",
+                  borderRadius: 18,
+                  padding: 16,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}>
+                  <p style={{
+                    fontSize: transcript ? 28 : 15,
+                    fontWeight: 800,
+                    color: transcript ? ORANGE : "#D1D5DB",
+                    fontStyle: transcript ? "italic" : "normal",
+                    textAlign: "center",
+                    lineHeight: 1.4,
+                  }}>
+                    {transcript || "Waiting for translation..."}
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

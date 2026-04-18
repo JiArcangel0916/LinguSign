@@ -87,6 +87,7 @@ const Learn = ({ onBack }) => {
   const startFlow = (cat, sub, drill) => {
     const target = sub || cat;
     const data = generateQuiz(target);
+    console.log(data)
     setQuizData(data);
     setSelection({ category: cat, subCategory: sub, drillType: drill });
     setTutorialIndex(0);
@@ -95,16 +96,21 @@ const Learn = ({ onBack }) => {
     setPhase('tutorial');
   };
 
-  const handleAnswer = (choiceText) => {
+  const handleAnswer = (choiceText, question) => {
     if (feedback) return;
-    const isCorrect = choiceText === quizData[quizIndex].mainText;
-    setFeedback(isCorrect ? 'correct' : 'wrong');
+    const correctVal = quizData[quizIndex].mainText;
+    const isCorrect = choiceText === correctVal;
+
+    console.log(question)
+    
+    setFeedback(isCorrect ? 'correct' : { type: 'wrong', correct: correctVal });
     if (isCorrect) setScore((s) => s + 1);
+
     setTimeout(() => {
       setFeedback(null);
       if (quizIndex + 1 < quizData.length) setQuizIndex((i) => i + 1);
       else setPhase('result');
-    }, 1000);
+    }, 1500);
   };
 
   const resetToMenu = () => {
@@ -183,23 +189,25 @@ const Learn = ({ onBack }) => {
               <h1 className="text-8xl font-black text-orange-500 italic uppercase">"{q?.mainText}"</h1>
             </div>
           )}
-          <div className="grid grid-cols-2 gap-6 w-full max-w-2xl mx-auto">
+          <div className="grid grid-cols-2 gap-6 w-full max-w-3xl mx-auto">
             {q?.choices.map((c, i) => (
               <button
                 key={i}
-                onClick={() => handleAnswer(c.text)}
-                className="p-8 border-4 border-gray-100 rounded-[35px] flex items-center justify-center bg-white shadow-sm hover:border-orange-100 transition-all active:scale-95 overflow-hidden"
+                onClick={() => handleAnswer(c.text,q)}
+                className="aspect-[4/3] border-4 border-gray-100 rounded-[35px] flex items-center justify-center bg-white shadow-sm hover:border-orange-100 transition-all active:scale-95 overflow-hidden"
               >
                 {isAslToText
-                  ? <span className="text-2xl font-black text-gray-600 uppercase italic">{c.text}</span>
-                  : <MediaRenderer src={c.media} className="h-28 w-full" />}
+                  ? <span className="text-3xl font-black text-gray-600 uppercase italic">{c.text}</span>
+                  : <MediaRenderer src={c.media} className="w-full h-full" />}
               </button>
             ))}
           </div>
         </div>
         {feedback && (
-          <div className={`fixed bottom-0 left-0 right-0 p-12 text-center font-black text-white text-3xl italic ${feedback === 'correct' ? 'bg-green-500' : 'bg-red-500'}`}>
-            {feedback === 'correct' ? '✓ EXCELLENT!' : '✕ WRONG!'}
+          <div className={`fixed bottom-0 left-0 right-0 p-10 text-center font-black text-white text-3xl italic ${feedback === 'correct' ? 'bg-green-500' : 'bg-red-500'}`}>
+            {feedback === 'correct' 
+              ? '✓ EXCELLENT!' 
+              : `✕ WRONG! Correct answer: ${feedback.correct}`}
           </div>
         )}
       </div>
@@ -216,8 +224,12 @@ const Learn = ({ onBack }) => {
         </p>
         <div className="w-full max-w-md space-y-5">
           <button
-            onClick={() => { setScore(0); setTutorialIndex(0); setQuizIndex(0); setPhase('tutorial'); }}
+            onClick={() => startFlow(selection.category, selection.subCategory, selection.drillType)}
             className="w-full bg-orange-500 text-white font-black py-7 rounded-[40px] shadow-xl uppercase tracking-widest text-2xl italic"
+          >CONTINUE</button>
+          <button
+            onClick={() => { setScore(0); setTutorialIndex(0); setQuizIndex(0); setPhase('tutorial'); }}
+            className="w-full border-4 border-orange-500 text-orange-500 font-black py-6 rounded-[40px] uppercase tracking-widest text-2xl italic"
           >RETRY LESSONS</button>
           <button
             onClick={resetToMenu}
@@ -240,7 +252,6 @@ const Learn = ({ onBack }) => {
         Which do you want to <span className="text-orange-500">learn</span>?
       </h2>
       <div className="flex flex-col items-center gap-8 max-w-2xl mx-auto">
-
         <div className="w-full flex flex-col items-center">
           <img
             src="/alphabet-button.svg"
@@ -252,7 +263,6 @@ const Learn = ({ onBack }) => {
             <DropdownMenu modes={MODES} onSelect={(mode) => startFlow('Alphabet', '', mode)} />
           )}
         </div>
-
         <div className="w-full flex flex-col items-center">
           <img
             src="/numbers-button.svg"
@@ -264,7 +274,6 @@ const Learn = ({ onBack }) => {
             <DropdownMenu modes={MODES} onSelect={(mode) => startFlow('Digit', '', mode)} />
           )}
         </div>
-
         <div className="w-full flex flex-col items-center">
           <img
             src="/words-button.svg"
@@ -276,7 +285,6 @@ const Learn = ({ onBack }) => {
             <WordsDropdown onSelect={(sub, mode) => startFlow('Words', sub, mode)} />
           )}
         </div>
-
       </div>
     </div>
   );

@@ -64,7 +64,7 @@ export const WORD_DICT = [
             { id: 14, word: "Give", media: "/aslMedia/word/Actions/give.mp4", directions: "To freely transfer the possession of something to someone." },
             { id: 15, word: "Love", media: "/aslMedia/word/Actions/love.mp4", directions: "An intense feeling of deep affection." },
             { id: 16, word: "Pray", media: "/aslMedia/word/Actions/pray.mp4", directions: "To address a solemn request or expression of thanks to a deity." },
-            { id: 17, word: "Receive", media: "/aslMedia/word/Actions/recieve.mp4", directions: "To be given, presented with, or paid something." },
+            { id: 17, word: "Receive", media: "/aslMedia/word/Actions/receive.mp4", directions: "To be given, presented with, or paid something." },
             { id: 18, word: "Run", media: "/aslMedia/word/Actions/run.mp4", directions: "To move at a speed faster than a walk." },
             { id: 19, word: "Shower", media: "/aslMedia/word/Actions/shower.mp4", directions: "To wash oneself in a spray of water." },
             { id: 20, word: "Sleep", media: "/aslMedia/word/Actions/sleep.mp4", directions: "A natural state of rest for the body and mind." },

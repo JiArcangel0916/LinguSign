@@ -1,39 +1,105 @@
-# 👋 Samplingo
+# Palmingo 🦩
 
-A web application for ASL Learning using MediaPipe and SVM.
+An ASL (American Sign Language) learning app with a dictionary, quiz system, and translation features.
 
-## 🚀 Setup and Installation
+## Prerequisites
 
-1. **Clone the repository**
-   Run this in your terminal to download the project:
-   ```
-   git clone https://github.com/JiArcangel0916/LinguSign.git
-   ```
-2. Create and activate a virtual environment
-Open the folder in your code editor and run:
+Make sure you have the following installed:
 
-  ```
-  python -m venv venv
-  .\venv\Scripts\activate
-  You should see (venv) appear in your terminal prompt.
-  ```
-3. Install dependencies
-Install the required libraries for both data collection and detection:
+- Python 3.8+
+- Node.js 18+
+- npm
 
-  ```
-pip install -r requirements.txt
-  ```
-## Running the Inference (Test)
+---
 
-To test the real-time ASL recognition, ensure you have the **pkl file** and **hand_landmarker.task** files in your root directory.
+## Getting Started
 
-4. Run the inference file:
-  ```
-python inference.py
-  ```
-5. Controls:
-  ```
-Detection: A purple bounding box will appear when a hand is detected.
-Prediction: The predicted letter and confidence score will appear above the box.
-Exit: Press q to close the camera window.
-  ```
+### Backend
+
+1. Navigate to the backend folder:
+```bash
+   cd backend
+```
+
+2. Create and activate a virtual environment:
+```bash
+   python -m venv venv
+
+   # Windows
+   venv\Scripts\activate
+
+   # Mac/Linux
+   source venv/bin/activate
+```
+
+3. Install dependencies:
+```bash
+   pip install -r requirements.txt
+```
+
+4. Run the server:
+```bash
+   python main.py
+```
+
+The backend will start running at `http://localhost:8000`
+
+---
+
+### Frontend
+
+1. Open a new terminal and navigate to the frontend folder:
+```bash
+   cd frontend
+```
+
+2. Install dependencies:
+```bash
+   npm install
+```
+
+3. Start the development server:
+```bash
+   npm run dev
+```
+
+The app will be available at `http://localhost:5173`
+
+---
+
+## Environment Variables
+
+Create a `.env` file inside the `frontend/` folder with your Supabase credentials:
+
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+---
+
+## Project Structure
+
+```
+palmingo/
+├── backend/
+│   ├── main.py
+│   └── requirements.txt
+└── frontend/
+    ├── src/
+    │   ├── components/
+    │   ├── pages/
+    │   └── main.jsx
+    ├── public/
+    └── package.json
+```
+
+---
+
+## Features
+
+- 📖 ASL Dictionary — browse alphabet, digits, and word categories
+- 🎯 Quiz System — ASL to text and text to ASL drills with XP rewards
+- 🔓 Progression — unlock word categories as you earn XP
+- 🏆 Mastery Tracking — track which signs you've mastered
+- 📷 Translate — use your camera to translate signs
